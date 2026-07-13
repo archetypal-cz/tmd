@@ -1,0 +1,27 @@
+# Book profile per docs/FORMAT.md §9 — HPaMR
+spec_version: "1.0"
+original_language: en
+translation_language: cs
+paragraph_id:
+  pattern: '\d{3}\.\d{4}'
+  fields: [chapter, paragraph]
+  uniqueness: global
+  ordering: per-chapter
+authors:
+  style: names
+  vocabulary: [Kerray, Edita, Tomáš, Václav, Pavel, Fable, REV]
+  retired: []
+  # Fable = Claude Fable 5 (AI translator; full name in frontmatter `translator:`);
+  # REV = adversarial reviewer agent
+footnotes:
+  pattern: '\d+'
+  uniqueness: per-file
+scene_break: "* * *"
+features:
+  version_comments: false
+  glossary_links: false
+  tag_annotations: false
+frontmatter:
+  required: [chapter, title_en, title_cz]
+  optional: [link, post_id, translator]
+layout: content/<book>/<file>   # books 1-6, official HPMOR split (4 ends at ch 85)

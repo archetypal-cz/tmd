@@ -1,0 +1,48 @@
+{
+  "name": "@archetypal-cz/tmd",
+  "version": "0.1.0",
+  "description": "Translation Markdown (TMD) — spec and reference library for bilingual %% … %% translation files: parse, project, validate, remark plugin",
+  "keywords": ["markdown", "translation", "bilingual", "obsidian", "remark", "tmd"],
+  "license": "AGPL-3.0-only",
+  "author": "Archetypal, z.s. <kerray@archetypal.cz> (https://archetypal.cz)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/archetypal-cz/tmd.git"
+  },
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./remark": { "types": "./dist/remark.d.ts", "import": "./dist/remark.js" }
+  },
+  "bin": { "tmd": "./dist/cli.js" },
+  "files": ["dist", "profiles", "FORMAT.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "dependencies": {
+    "yaml": "^2.4.0"
+  },
+  "peerDependencies": {
+    "mdast-util-from-markdown": ">=2",
+    "unified": ">=11"
+  },
+  "peerDependenciesMeta": {
+    "mdast-util-from-markdown": { "optional": true },
+    "unified": { "optional": true }
+  },
+  "devDependencies": {
+    "@types/mdast": "^4.0.0",
+    "@types/node": "^18.19.0",
+    "remark-gfm": "^4.0.0",
+    "remark-parse": "^11.0.0",
+    "typescript": "^5.4.0",
+    "unified": "^11.0.0",
+    "vfile": "^6.0.0",
+    "vitest": "^1.6.0"
+  }
+}

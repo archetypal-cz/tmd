@@ -1,0 +1,52 @@
+---
+date: 1873-01-11
+carnet: "001"
+location: Nice
+translation_complete: true
+editor_approved: true
+conductor_approved: true
+---
+%% 001.0001 %%
+%% [#Kernberger](../../_original/_glossary/culture/literature/KATHERINE_KERNBERGER.md) %%
+%% 2026-01-29T10:00:00 LAN: "Carnet" - notebook/journal. Marie's term for her diary volumes. "N° 1" = Number 1 (first notebook) %%
+%% Carnet N° 1 %%
+Sešit č. 1
+
+%% 001.0002 %%
+%% 2026-01-29T10:01:00 LAN: EDITORIAL NOTE: This bracketed text is a later editorial insertion by Pierre Borel (1925), NOT Marie's writing. Translators should format distinctly from diary text %%
+%% 2026-02-12T10:00:00 TR: Editorial insertion by Pierre Borel preserved in brackets to visually distinguish from diary text. %%
+%% [Passages reproduits par Pierre Borel dans son article Le visage inconnu de Marie Bashkirtseff d'après ses mémoires, paru dans le N° XLIII de janvier 1925 de la revue Les Œuvres libres]. %%
+[Úryvky reprodukované Pierrem Borelem v jeho článku Neznámá tvář Marie Bashkirtseff podle jejích pamětí, publikovaném v č. XLIII v lednu 1925 v revue Les Œuvres libres].
+
+%% 001.0003 %%
+%% 2026-01-29T10:02:00 LAN: EDITORIAL NOTE: This paragraph is editorial commentary about Pierre Borel's reliability as editor, NOT Marie's writing. "Nous" = the modern editors speaking %%
+%% 2026-02-12T10:01:00 TR: Editors' voice preserved – formal register, distinct from Marie's diary style. %%
+%% Connaissant la façon dont Pierre Borel concevait les devoirs d'un éditeur de textes nous avions d'abord hésité à publier ce document. Nous nous sommes résolus à les donner après avoir constaté que les événements auxquels Marie dit avoir assisté ont eu lieu aux dates indiquées. %%
+S vědomím toho, jak Pierre Borel chápal povinnosti redaktora textů, jsme zpočátku váhali s publikací tohoto dokumentu. Rozhodli jsme se jej zveřejnit poté, co jsme ověřili, že události, které Marie popisuje, se skutečně odehrály v uvedených datech.
+
+%% 001.0004 %%
+%% Du 11 janvier 1873 au 12 février 1873 %%
+Od 11. ledna 1873 do 12. února 1873
+
+%% 001.0005 %%
+%% [#Nice](../../_original/_glossary/places/cities/NICE.md) %%
+
+%% 001.0006 %%
+%% [#Nice](../../_original/_glossary/places/cities/NICE.md) [#Howard_family](../../_original/_glossary/people/recurring/HOWARD_FAMILY.md) [#Mouton](../../_original/_glossary/places/cities/MOUTON.md) [#Promenade_des_Anglais](../../_original/_glossary/places/cities/PROMENADE_DES_ANGLAIS.md) %%
+%% 2025-12-07T10:00:00 LAN: "canaille" - strong pejorative: scoundrel/rascal %%
+%% 2025-12-07T10:01:00 LAN: "en amazone" - 1870s: wearing a riding habit for side-saddle %%
+%% 2025-12-07T10:02:00 LAN: "toilette" - 1870s: the complete outfit/dress ensemble %%
+%% 2026-02-12T10:02:00 TR: "canaille" → "lump" (Czech pejorative preserving Marie's sharp disdain). "en amazone" → "v jezdeckém úboru". "toilette" → "šaty". %%
+%% Les Howard étaient venus me chercher, mais la canaille Mouton ne m'a pas envoyé le cheval.. J'ai fait plusieurs fois le tour en voiture en suivant les chevaux; j'étais en amazone, puis j'ai changé de toilette à la promenade; une délicieuse robe bleue. %%
+Howardovi si pro mě přišli, ale ten lump Mouton mi neposlal koně. Projela jsem se několikrát v kočáře za koňmi; byla jsem v jezdeckém úboru, pak jsem si na promenádě převlékla šaty – rozkošné modré.
+
+%% 001.0007 %%
+%% [#Opera_Nice](../../_original/_glossary/places/theaters/OPERA_NICE.md) [#Un_ballo_in_maschera](../../_original/_glossary/places/theaters/UN_BALLO_IN_MASCHERA.md) [#Italian](../../_original/_glossary/culture/languages/ITALIAN.md) %%
+%% [#Music_theme](../../_original/_glossary/culture/themes/MUSIC_THEME.md) %%
+%% [#Emotions](../../_original/_glossary/culture/themes/EMOTIONS.md) %%
+%% 2025-12-07T10:04:00 LAN: ITALIAN: "Un ballo in maschera" - Verdi opera title, keep in Italian with footnote %%
+%% 2026-02-12T10:03:00 TR: Italian opera title preserved; footnote added with Czech name. %%
+%% Ce soir, à l'Opéra, "Un ballo in maschera". Beaucoup de monde, mais moi, je suis triste. %%
+Dnes večer v Opeře „Un ballo in maschera"[^01.07.1]. Spousta lidí, ale já jsem smutná.
+
+[^01.07.1]: Verdiho opera Maškarní ples; název ponechán v originálním znění italsky.
