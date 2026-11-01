@@ -13,6 +13,11 @@ export { parseProfile, idRegex, GENERIC_PROFILE } from './profile.js';
 export { alignParagraphs, alignToTmd, splitParagraphs, stripFrontmatter, frontmatterBlock } from './align.js';
 export type { AlignOptions, AlignPair, AlignResult, AlignStats } from './align.js';
 export { stamp } from './stamp.js';
+export {
+  AUDIO_TONES, AUDIO_PACES, projectForListening, parseMarker, compileParagraph, parseLexicon,
+  splitSentences, checkAudio, planAudio,
+} from './audio.js';
+export type { AudioMarker, LexiconEntry, AudioFinding, AudioSegment, AudioPlan, AudioPlanOptions } from './audio.js';
 export type { StampOptions, StampResult } from './stamp.js';
 export type {
   TmdProfile,

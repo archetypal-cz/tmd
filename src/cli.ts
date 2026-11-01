@@ -7,6 +7,9 @@
  *   tmd align    --original EN.md --translation CS.md --prefix 002 [--step N]
  *                [--frontmatter FILE] [--scene-break '* * *'] [--profile FILE] [--out FILE]
  *   tmd stamp    --prefix 002 [--step N] [--profile FILE] [--out FILE | --in-place] <file>
+ *   tmd audio check [--lexicon FILE] <file>
+ *   tmd audio plan  [--voices FILE] [--voice KEY] [--lexicon FILE] [--stability X] [--out FILE] <file>
+ *                   (lexicon defaults to <file dir>/audio/lexicon.yaml, voices to the nearest audio/voices.yaml up the tree)
  *
  * `align` builds a TMD file from an original and an existing translation and
  * REFUSES to write it unless its projection equals the translation (§2.2);
@@ -25,6 +28,8 @@ import { projectMany } from './project.js';
 import { validate } from './validate.js';
 import { alignToTmd } from './align.js';
 import { stamp } from './stamp.js';
+import { checkAudio, parseLexicon, planAudio } from './audio.js';
+import { parse as parseYaml } from 'yaml';
 
 function fail(msg: string): never {
   console.error(`tmd: ${msg}`);
@@ -80,6 +85,11 @@ interface Args {
   frontmatter?: string;
   sceneBreak?: string;
   inPlace?: boolean;
+  sub?: string;
+  voices?: string;
+  voice?: string;
+  lexicon?: string;
+  stability?: number;
   inputs: string[];
 }
 
@@ -102,8 +112,17 @@ function parseArgs(argv: string[]): Args {
     else if (a === '--frontmatter') args.frontmatter = rest[++i] ?? fail('--frontmatter needs a value');
     else if (a === '--scene-break') args.sceneBreak = rest[++i] ?? fail('--scene-break needs a value');
     else if (a === '--in-place') args.inPlace = true;
+    else if (a === '--voices') args.voices = rest[++i] ?? fail('--voices needs a value');
+    else if (a === '--voice') args.voice = rest[++i] ?? fail('--voice needs a value');
+    else if (a === '--lexicon') args.lexicon = rest[++i] ?? fail('--lexicon needs a value');
+    else if (a === '--stability') args.stability = Number(rest[++i] ?? fail('--stability needs a value'));
     else if (a.startsWith('--')) fail(`unknown option ${a}`);
     else args.inputs.push(a);
+  }
+  if (args.command === 'audio') {
+    args.sub = args.inputs.shift();
+    if (args.sub !== 'check' && args.sub !== 'plan') fail('audio needs a subcommand: check | plan');
+    if (args.inputs.length !== 1) fail('audio takes exactly one TMD file');
   }
   if (args.command === 'align') {
     if (!args.original || !args.translation) fail('align needs --original and --translation');
@@ -118,7 +137,53 @@ const args = parseArgs(process.argv.slice(2));
 const files = args.command === 'align' ? [] : collectFiles(args.inputs);
 const profile = loadProfile(args.profile, args.command === 'align' ? [args.translation!] : args.inputs);
 
-if (args.command === 'align') {
+function findUp(start: string, rel: string): string | undefined {
+  for (let dir = path.dirname(path.resolve(start)); ; dir = path.dirname(dir)) {
+    const c = path.join(dir, rel);
+    if (fs.existsSync(c)) return c;
+    if (dir === path.dirname(dir)) return undefined;
+  }
+}
+
+if (args.command === 'audio') {
+  const file = files[0]!;
+  const source = fs.readFileSync(file, 'utf-8');
+  const lexPath = args.lexicon ?? path.join(path.dirname(file), 'audio', 'lexicon.yaml');
+  const lexicon = fs.existsSync(lexPath) ? parseLexicon(fs.readFileSync(lexPath, 'utf-8')) : [];
+  if (fs.existsSync(lexPath)) console.error(`tmd: lexicon ${lexPath} (${lexicon.length} entries)`);
+  if (args.sub === 'check') {
+    const findings = checkAudio(source, profile, lexicon);
+    for (const f of findings) console.log(`${f.severity.toUpperCase()} ${f.pid ?? ''}${f.line ? ` [${file}:${f.line}]` : ''} ${f.message}`);
+    const errors = findings.filter((f) => f.severity === 'error').length;
+    console.error(`tmd: audio check ${findings.length} finding(s), ${errors} error(s)`);
+    process.exit(errors ? 1 : 0);
+  }
+  const voicesPath = args.voices ?? findUp(file, path.join('audio', 'voices.yaml'));
+  if (!voicesPath) fail('no audio/voices.yaml found - pass --voices');
+  const vy = parseYaml(fs.readFileSync(voicesPath, 'utf-8')) as {
+    model?: string; language_code?: string; default?: { narrator?: string };
+    voices?: Record<string, { id: string; name?: string }>;
+  };
+  const key = args.voice ?? vy.default?.narrator;
+  const v = key ? vy.voices?.[key] : undefined;
+  if (!key || !v) fail(`voice ${key ?? '(none)'} not in ${voicesPath}`);
+  const plan = planAudio(source, profile, {
+    voice: { key, id: v.id, name: v.name },
+    model: vy.model,
+    language: vy.language_code,
+    stability: args.stability ?? null,
+    lexicon,
+  });
+  const errors = plan.findings.filter((f) => f.severity === 'error');
+  console.error(`tmd: audio plan ${JSON.stringify(plan.totals)}, voice ${key}, ${errors.length} error(s)`);
+  if (errors.length) {
+    for (const f of errors) console.error(`  ERROR ${f.pid ?? ''} ${f.message}`);
+    process.exit(1);
+  }
+  const out = JSON.stringify(plan, null, 2) + '\n';
+  if (args.out) fs.writeFileSync(args.out, out);
+  else process.stdout.write(out);
+} else if (args.command === 'align') {
   const result = alignToTmd(fs.readFileSync(args.original!, 'utf-8'), fs.readFileSync(args.translation!, 'utf-8'), {
     idPrefix: args.prefix!,
     idStep: args.step,
