@@ -127,6 +127,38 @@ original text. Library: `alignToTmd`, `alignParagraphs`, `splitParagraphs`.
 `tmd stamp` gives a translation-only file permanent paragraph IDs (no
 original needed) and refuses a file that already has IDs.
 
+```
+tmd audio check content/007-x/x.md
+tmd audio plan --out plan.json content/007-x/x.md     # [--voice KEY] [--cast FILE | --no-cast] [--effects FILE]
+```
+
+`tmd audio` compiles `%%[audio …]%%` direction markers (tone, pauses, pronunciation,
+`skip`, `read_as`) into a TTS render plan: engine text per paragraph segment, player
+silences and a content hash per segment as the render-cache key. Lexicon:
+`<work>/audio/lexicon.yaml`; voices: the nearest `audio/voices.yaml` up the tree.
+
+**Radio play.** When `<work>/audio/cast.yaml` exists (or `--cast FILE`), the plan is
+`version: 2`: each segment carries its `role`, `voice`, `stability` and `fx`.
+
+```yaml
+version: 1
+labels: hide             # "**NAME:**" leads are not read (kept in `plain` for the player)
+turn_pause_ms: 250       # silence on a speaker change
+default_role: vypravec
+labels_map: {MANNOVÁ: mannova, VZDUCH: vzduch}
+roles:
+  vypravec: {voice: tomas}               # key in voices.yaml
+  vzduch:   {voice: filip, fx: robot, stability: 0.5}
+```
+
+Speaker = paragraph `speaker=` > label via `labels_map` > `default_role`. A span
+`%%[audio at="Neboj se." until="…" speaker=andel fx=sakralni]%%` gives part of a
+paragraph its own voice/effect (segments `pid#1`, `pid#2`, …). `fx` presets (ffmpeg
+chains, applied by the renderer after TTS, not part of the hash) come from the nearest
+shared `audio/effects.yaml` above the work, overlaid by `<work>/audio/effects.yaml`;
+resolution is span `fx` > paragraph `fx` > role `fx`, `fx=none` turns it off. Without a
+cast (`--no-cast`) the plan is the single-voice `version: 1`, unchanged.
+
 ## Related
 
 - [`tmd-vscode`](https://github.com/archetypal-cz/tmd-vscode) — syntax

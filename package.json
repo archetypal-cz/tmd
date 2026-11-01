@@ -1,6 +1,6 @@
 {
   "name": "@archetypal-cz/tmd",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Translation Markdown (TMD) — spec and reference library for bilingual %% … %% translation files: parse, project, validate, remark plugin",
   "keywords": ["markdown", "translation", "bilingual", "obsidian", "remark", "tmd"],
   "license": "AGPL-3.0-only",

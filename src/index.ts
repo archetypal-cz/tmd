@@ -15,9 +15,12 @@ export type { AlignOptions, AlignPair, AlignResult, AlignStats } from './align.j
 export { stamp } from './stamp.js';
 export {
   AUDIO_TONES, AUDIO_PACES, projectForListening, parseMarker, compileParagraph, parseLexicon,
-  splitSentences, checkAudio, planAudio,
+  splitSentences, checkAudio, planAudio, compileRuns, parseCast, parseEffects,
 } from './audio.js';
-export type { AudioMarker, LexiconEntry, AudioFinding, AudioSegment, AudioPlan, AudioPlanOptions } from './audio.js';
+export type {
+  AudioMarker, LexiconEntry, AudioFinding, AudioSegment, AudioPlan, AudioPlanOptions, AudioVoiceRef,
+  AudioCast, CastRole, FxPreset, VoiceCatalog, AudioCastOptions, AudioPlanCast, AudioRun, CompiledParagraph,
+} from './audio.js';
 export type { StampOptions, StampResult } from './stamp.js';
 export type {
   TmdProfile,

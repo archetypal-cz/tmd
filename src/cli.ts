@@ -7,9 +7,13 @@
  *   tmd align    --original EN.md --translation CS.md --prefix 002 [--step N]
  *                [--frontmatter FILE] [--scene-break '* * *'] [--profile FILE] [--out FILE]
  *   tmd stamp    --prefix 002 [--step N] [--profile FILE] [--out FILE | --in-place] <file>
- *   tmd audio check [--lexicon FILE] <file>
- *   tmd audio plan  [--voices FILE] [--voice KEY] [--lexicon FILE] [--stability X] [--out FILE] <file>
- *                   (lexicon defaults to <file dir>/audio/lexicon.yaml, voices to the nearest audio/voices.yaml up the tree)
+ *   tmd audio check [--lexicon FILE] [--voices FILE] [--cast FILE | --no-cast] [--effects FILE] <file>
+ *   tmd audio plan  [--voices FILE] [--voice KEY] [--lexicon FILE] [--stability X]
+ *                   [--cast FILE | --no-cast] [--effects FILE] [--out FILE] <file>
+ *                   (lexicon defaults to <file dir>/audio/lexicon.yaml, voices to the nearest audio/voices.yaml up the tree;
+ *                    cast defaults to <file dir>/audio/cast.yaml when present → radio play, plan version 2;
+ *                    effects = nearest shared audio/effects.yaml above the work dir, overlaid by <file dir>/audio/effects.yaml,
+ *                    or only --effects FILE)
  *
  * `align` builds a TMD file from an original and an existing translation and
  * REFUSES to write it unless its projection equals the translation (§2.2);
@@ -28,7 +32,7 @@ import { projectMany } from './project.js';
 import { validate } from './validate.js';
 import { alignToTmd } from './align.js';
 import { stamp } from './stamp.js';
-import { checkAudio, parseLexicon, planAudio } from './audio.js';
+import { checkAudio, parseCast, parseEffects, parseLexicon, planAudio, type AudioCastOptions, type FxPreset } from './audio.js';
 import { parse as parseYaml } from 'yaml';
 
 function fail(msg: string): never {
@@ -90,6 +94,9 @@ interface Args {
   voice?: string;
   lexicon?: string;
   stability?: number;
+  cast?: string;
+  noCast?: boolean;
+  effects?: string;
   inputs: string[];
 }
 
@@ -116,6 +123,9 @@ function parseArgs(argv: string[]): Args {
     else if (a === '--voice') args.voice = rest[++i] ?? fail('--voice needs a value');
     else if (a === '--lexicon') args.lexicon = rest[++i] ?? fail('--lexicon needs a value');
     else if (a === '--stability') args.stability = Number(rest[++i] ?? fail('--stability needs a value'));
+    else if (a === '--cast') args.cast = rest[++i] ?? fail('--cast needs a value');
+    else if (a === '--no-cast') args.noCast = true;
+    else if (a === '--effects') args.effects = rest[++i] ?? fail('--effects needs a value');
     else if (a.startsWith('--')) fail(`unknown option ${a}`);
     else args.inputs.push(a);
   }
@@ -123,6 +133,7 @@ function parseArgs(argv: string[]): Args {
     args.sub = args.inputs.shift();
     if (args.sub !== 'check' && args.sub !== 'plan') fail('audio needs a subcommand: check | plan');
     if (args.inputs.length !== 1) fail('audio takes exactly one TMD file');
+    if (args.cast && args.noCast) fail('--cast and --no-cast exclude each other');
   }
   if (args.command === 'align') {
     if (!args.original || !args.translation) fail('align needs --original and --translation');
@@ -151,31 +162,71 @@ if (args.command === 'audio') {
   const lexPath = args.lexicon ?? path.join(path.dirname(file), 'audio', 'lexicon.yaml');
   const lexicon = fs.existsSync(lexPath) ? parseLexicon(fs.readFileSync(lexPath, 'utf-8')) : [];
   if (fs.existsSync(lexPath)) console.error(`tmd: lexicon ${lexPath} (${lexicon.length} entries)`);
+  type VoicesYaml = {
+    model?: string; language_code?: string; default?: { narrator?: string };
+    voices?: Record<string, { id: string; name?: string }>;
+  };
+  let vy: VoicesYaml | undefined;
+  let voicesPath: string | undefined;
+  const loadVoices = (): VoicesYaml => {
+    voicesPath = args.voices ?? findUp(file, path.join('audio', 'voices.yaml'));
+    if (!voicesPath) fail('no audio/voices.yaml found - pass --voices');
+    return (vy ??= parseYaml(fs.readFileSync(voicesPath, 'utf-8')) as VoicesYaml);
+  };
+  // radio play: cast + effects
+  const workDir = path.dirname(file);
+  const castPath = args.noCast ? undefined : args.cast ?? path.join(workDir, 'audio', 'cast.yaml');
+  if (args.cast && !fs.existsSync(args.cast)) fail(`no such cast file: ${args.cast}`);
+  const ctx: AudioCastOptions = {};
+  const castErrors: string[] = [];
+  if (castPath && fs.existsSync(castPath)) {
+    const parsed = parseCast(fs.readFileSync(castPath, 'utf-8'), loadVoices().voices ?? {});
+    castErrors.push(...parsed.errors);
+    ctx.cast = parsed.cast;
+    const effectFiles = args.effects
+      ? [args.effects]
+      : [findUp(workDir, path.join('audio', 'effects.yaml')), path.join(workDir, 'audio', 'effects.yaml')].filter(
+          (f): f is string => !!f && fs.existsSync(f)
+        );
+    if (args.effects && !fs.existsSync(args.effects)) fail(`no such effects file: ${args.effects}`);
+    const presets: Record<string, FxPreset> = {};
+    for (const f of [...new Set(effectFiles)]) {
+      const e = parseEffects(fs.readFileSync(f, 'utf-8'));
+      castErrors.push(...e.errors.map((m) => `${m} (${f})`));
+      Object.assign(presets, e.presets);
+    }
+    ctx.effects = presets;
+    console.error(`tmd: cast ${castPath} (${Object.keys(ctx.cast?.roles ?? {}).length} roles), effects ${effectFiles.join(', ') || '(none)'} (${Object.keys(presets).length} presets)`);
+  }
   if (args.sub === 'check') {
-    const findings = checkAudio(source, profile, lexicon);
+    const findings = [
+      ...castErrors.map((message) => ({ severity: 'error' as const, message, pid: undefined, line: undefined })),
+      ...checkAudio(source, profile, lexicon, ctx),
+    ];
     for (const f of findings) console.log(`${f.severity.toUpperCase()} ${f.pid ?? ''}${f.line ? ` [${file}:${f.line}]` : ''} ${f.message}`);
     const errors = findings.filter((f) => f.severity === 'error').length;
     console.error(`tmd: audio check ${findings.length} finding(s), ${errors} error(s)`);
     process.exit(errors ? 1 : 0);
   }
-  const voicesPath = args.voices ?? findUp(file, path.join('audio', 'voices.yaml'));
-  if (!voicesPath) fail('no audio/voices.yaml found - pass --voices');
-  const vy = parseYaml(fs.readFileSync(voicesPath, 'utf-8')) as {
-    model?: string; language_code?: string; default?: { narrator?: string };
-    voices?: Record<string, { id: string; name?: string }>;
-  };
-  const key = args.voice ?? vy.default?.narrator;
-  const v = key ? vy.voices?.[key] : undefined;
+  if (castErrors.length) {
+    for (const e of castErrors) console.error(`  ERROR ${e}`);
+    fail(`${castErrors.length} cast/effects error(s)`);
+  }
+  const voicesY = loadVoices();
+  if (ctx.cast && args.voice) console.error('tmd: --voice ignored, the cast assigns voices');
+  const key = ctx.cast ? ctx.cast.roles[ctx.cast.default_role]!.voice.key : args.voice ?? voicesY.default?.narrator;
+  const v = key ? voicesY.voices?.[key] : undefined;
   if (!key || !v) fail(`voice ${key ?? '(none)'} not in ${voicesPath}`);
   const plan = planAudio(source, profile, {
     voice: { key, id: v.id, name: v.name },
-    model: vy.model,
-    language: vy.language_code,
+    model: voicesY.model,
+    language: voicesY.language_code,
     stability: args.stability ?? null,
     lexicon,
+    ...ctx,
   });
   const errors = plan.findings.filter((f) => f.severity === 'error');
-  console.error(`tmd: audio plan ${JSON.stringify(plan.totals)}, voice ${key}, ${errors.length} error(s)`);
+  console.error(`tmd: audio plan ${JSON.stringify(plan.totals)}, ${ctx.cast ? `cast (${Object.keys(ctx.cast.roles).length} roles)` : `voice ${key}`}, ${errors.length} error(s)`);
   if (errors.length) {
     for (const f of errors) console.error(`  ERROR ${f.pid ?? ''} ${f.message}`);
     process.exit(1);

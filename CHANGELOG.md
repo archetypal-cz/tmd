@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0 - unreleased (branch `cast`)
+
+- `tmd audio`: radio play. `<work>/audio/cast.yaml` (roles → voices.yaml keys, `labels_map`,
+  `labels: hide|read`, `turn_pause_ms`, per-role `fx`/`stability`) → plan `version: 2` with
+  per-segment `role`, `voice`, `stability`, `fx`; `totals.roles`. Speaker from the `**NAME:**` label,
+  hidden labels (kept in `plain`), mid-paragraph speaker/fx spans `at=… [until=…] speaker=… fx=…`,
+  fx presets from `audio/effects.yaml` (shared + work). New: `compileRuns`, `parseCast`, `parseEffects`;
+  CLI `--cast`, `--no-cast`, `--effects`. Without a cast the output is byte-identical to 0.2.1.
+
 ## 0.2.1 - 2026-11-01
 
 - `tmd audio`: literal `[..]` in the work text become `(..)` in the engine text - ElevenLabs v3/v4
