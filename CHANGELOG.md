@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 - 2026-11-01
+
+- `tmd audio`: literal `[..]` in the work text become `(..)` in the engine text - ElevenLabs v3/v4
+  would otherwise perform them as audio tags (found on Turing Test, translator note in brackets).
+
 ## 0.2.0 - 2026-11-01
 
 - `tmd align` / `alignToTmd`: build TMD from an independently sourced original + existing translation

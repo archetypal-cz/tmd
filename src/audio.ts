@@ -118,6 +118,9 @@ export function projectForListening(text: string): string {
   t = t.replace(/(\*\*|__)(.+?)\1/g, '$2');
   t = t.replace(/(?<![\w*])[*_](?!\s)(.+?)(?<!\s)[*_](?![\w*])/gu, '$1');
   t = t.replace(/\*/g, '').replace(/\\([\\`*_{}[\]()#+\-.!])/g, '$1');
+  // Literal brackets in the WORK's text would be taken by ElevenLabs v3/v4 as audio tags
+  // ("[Pozn. překl.: …]" performed instead of read). Engine tags are inserted after projection.
+  t = t.replace(/\[/g, '(').replace(/\]/g, ')');
   return t.replace(/[ \t]+/g, ' ').trim();
 }
 

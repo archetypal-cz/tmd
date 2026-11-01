@@ -44,6 +44,13 @@ describe('projectForListening', () => {
   });
 });
 
+describe('literal brackets', () => {
+  it('turns literal [..] in the work text into (..) so the engine does not treat them as tags', () => {
+    expect(projectForListening('Verš. [Pozn. překl.: Fischer]')).toBe('Verš. (Pozn. překl.: Fischer)');
+    expect(compileParagraph('Verš. [Pozn.]', [{ tone: 'calm' }]).text).toBe('[calmly] Verš. (Pozn.)');
+  });
+});
+
 describe('parseMarker', () => {
   it('parses quoted and bare values and flags unknown keys', () => {
     const r = parseMarker('[audio at="Je na čase" tone=angry foo=bar]')!;
