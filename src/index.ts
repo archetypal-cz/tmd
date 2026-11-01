@@ -10,6 +10,10 @@ export type { ValidateFileInput, ValidateResult } from './validate.js';
 export { stripComments } from './strip.js';
 export { classifyComment, normalizeTimestamp } from './classify.js';
 export { parseProfile, idRegex, GENERIC_PROFILE } from './profile.js';
+export { alignParagraphs, alignToTmd, splitParagraphs, stripFrontmatter, frontmatterBlock } from './align.js';
+export type { AlignOptions, AlignPair, AlignResult, AlignStats } from './align.js';
+export { stamp } from './stamp.js';
+export type { StampOptions, StampResult } from './stamp.js';
 export type {
   TmdProfile,
   ParagraphIdScheme,

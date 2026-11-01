@@ -110,6 +110,23 @@ tmd project --heading "## {chapter}. {title_cz}" content/1/*.md > book1.md
 but never defined, annotations glued to translation text, `%%` residue that
 would leak into publication.
 
+```
+tmd align --original en.md --translation cs.md --prefix 002 --out content/002-x/x.md
+tmd stamp --prefix 003 --in-place cs-only.md
+```
+
+`tmd align` turns an independently sourced original plus an existing
+translation into a TMD file: paragraph alignment by dynamic programming
+(1-1, 1-0, 0-1, 2-1, 1-2 on length ratio, numbers, names and paragraph shape),
+uncertain spots marked `%% ALIGN? … %%` for a human. It **refuses to write**
+unless projecting the result gives back exactly the translation (§2.2). An
+original paragraph that would classify as something else under §4 (starts
+with `[`, or `WORD?`) is guarded with an invisible U+2060 so it stays
+original text. Library: `alignToTmd`, `alignParagraphs`, `splitParagraphs`.
+
+`tmd stamp` gives a translation-only file permanent paragraph IDs (no
+original needed) and refuses a file that already has IDs.
+
 ## Related
 
 - [`tmd-vscode`](https://github.com/archetypal-cz/tmd-vscode) — syntax
